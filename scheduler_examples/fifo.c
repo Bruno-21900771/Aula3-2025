@@ -1,8 +1,6 @@
 #include "fifo.h"
-
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "msg.h"
 #include <unistd.h>
 

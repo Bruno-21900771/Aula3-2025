@@ -11,18 +11,14 @@
 
 #include <stdlib.h>
 #include <sys/errno.h>
-
 #include "fifo.h"
 #include "sjf.h"
-//#include "rr.h"
-//#include "mlfq.h"
-
+#include "rr.h"
+#include "mlfq.h"
 #include "msg.h"
 #include "queue.h"
 
 static uint32_t PID = 0;
-
-
 
 /**
  * @brief Set up the server socket for the scheduler.
@@ -155,6 +151,7 @@ void check_new_commands(queue_t *command_queue, queue_t *blocked_queue, queue_t 
             current_pcb->pid = msg.pid; // Set the pid from the message
             current_pcb->time_ms = msg.time_ms;
             current_pcb->status = TASK_BLOCKED;
+            current_pcb->last_update_time_ms = current_time_ms;
             enqueue_pcb(blocked_queue, current_pcb);
             DBG("Process %d requested BLOCK for %d ms\n", current_pcb->pid);
         } else {
@@ -314,6 +311,15 @@ int main(int argc, char *argv[]) {
 
             case SCHED_SJF:
                 sjf_scheduler(current_time_ms, &ready_queue, &CPU);
+                break;
+
+            case SCHED_RR:
+                rr_scheduler(current_time_ms, &ready_queue, &CPU);
+                break;
+
+            case SCHED_MLFQ:
+                mlfq_scheduler(current_time_ms, &ready_queue, &CPU);
+                break;
 
             default:
                 printf("Unknown scheduler type\n");
